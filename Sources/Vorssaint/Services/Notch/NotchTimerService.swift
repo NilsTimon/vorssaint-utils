@@ -35,6 +35,7 @@ final class NotchTimerService: ObservableObject {
         guard !session.hasSession else { return }
         alert.stop()
         session.start(mode: mode, minutes: minutes, now: now, configuration: .load())
+        QuestBridge.record(.start, session)
         scheduleCompletion()
         NotchService.shared.reactMascot(.ready)
     }
@@ -44,6 +45,7 @@ final class NotchTimerService: ObservableObject {
         finishIfDue()
         if session.isRunning { session.pause(at: now) }
         else if session.isPaused { session.resume(at: now) }
+        QuestBridge.recordToggle(session)
         scheduleCompletion()
     }
 
@@ -52,11 +54,13 @@ final class NotchTimerService: ObservableObject {
         guard session.canStartNext else { return }
         alert.stop()
         session.startNext(at: now)
+        QuestBridge.record(.next, session)
         scheduleCompletion()
         NotchService.shared.reactMascot(.ready)
     }
 
     func cancel() {
+        QuestBridge.record(.cancel, session)
         alert.stop()
         completionTask?.cancel(); completionTask = nil
         countdownTask?.cancel(); countdownTask = nil
@@ -76,6 +80,7 @@ final class NotchTimerService: ObservableObject {
 
     private func finishIfDue() {
         guard session.finishIfDue(at: now) else { return }
+        QuestBridge.record(.finish, session)
         alert.stop()
         // The notice takes the strip it watched from.
         NotchService.shared.endMascotCountdown(retreating: false)
