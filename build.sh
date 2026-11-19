@@ -32,6 +32,7 @@ DEV=0
 INSTALL=0
 TEST=0
 TEST_ARGS=()
+OPTIMIZED=0  # quest-bridge: --dev --optimized
 for arg in "$@"; do
     case "$arg" in
         --dev)     DEV=1 ;;
@@ -39,6 +40,7 @@ for arg in "$@"; do
         --test)    TEST=1 ;;
         --test-suite=*) TEST=1; TEST_ARGS+=("--suite=${arg#*=}") ;;
         --list-tests) TEST=1; TEST_ARGS+=(--list) ;;
+        --optimized) OPTIMIZED=1 ;;
     esac
 done
 
@@ -54,6 +56,12 @@ else
     EXECUTABLE="Vorssaint"
     APP_BUNDLE_ID="com.vorssaint.utils"
     BUILD_VARIANT_FLAGS=()
+    APP_OPTIMIZATION_FLAGS=(-O)
+    BUILD_CONFIGURATION="release"
+fi
+# quest-bridge: Developer-Variante (gleiche Bundle-ID, VORSSAINT_DEVELOPMENT)
+# für den Alltag optimiert kompilieren statt -Onone.
+if (( DEV && OPTIMIZED )); then
     APP_OPTIMIZATION_FLAGS=(-O)
     BUILD_CONFIGURATION="release"
 fi
